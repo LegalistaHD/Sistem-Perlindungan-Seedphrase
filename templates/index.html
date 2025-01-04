@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Enkripsi Seed Phrase</title>
+</head>
+<body>
+    <div class="container">
+        <h1>PERLINDUNGAN SEED PHRASE</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <div>
+            <h2>Enkripsi</h2>
+            <input type="text" id="seed_phrase" placeholder="Masukkan seed phrase">
+            <input type="text" id="secret_key" placeholder="Masukkan secret key (16 karakter)">
+            <input type="email" id="email_1" placeholder="Email untuk Seed Phrase">
+            <input type="email" id="email_2" placeholder="Email untuk Secret Key">
+            <button onclick="encryptSeedPhrase()">Enkripsi</button>
+        </div>
+        <div>
+            <h2>Dekripsi</h2>
+            <input type="text" id="encrypted_seed_phrase" placeholder="Masukkan seed phrase terenkripsi">
+            <input type="text" id="encrypted_secret_key" placeholder="Masukkan secret key terenkripsi">
+            <button onclick="decryptSeedPhrase()">Dekripsi</button>
+            <p id="decrypted_result"></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Raihan Akbar Maulana. All rights reserved.</p>
+    </footer>
+
+    <script>
+        async function encryptSeedPhrase() {
+            const seed_phrase = document.getElementById('seed_phrase').value;
+            const secret_key = document.getElementById('secret_key').value;
+            const email_1 = document.getElementById('email_1').value;
+            const email_2 = document.getElementById('email_2').value;
+
+            // Cek panjang secret key
+            if (secret_key.length !== 16) {
+                alert("Secret key harus terdiri dari 16 karakter!");
+                return;
+            }
+
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ seed_phrase, secret_key, email_1, email_2 })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        }
+
+        async function decryptSeedPhrase() {
+            const encrypted_seed_phrase = document.getElementById('encrypted_seed_phrase').value;
+            const encrypted_secret_key = document.getElementById('encrypted_secret_key').value;
+
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ encrypted_seed_phrase, encrypted_secret_key })
+            });
+
+            const result = await response.json();
+            document.getElementById('decrypted_result').innerText = `Hasil dekripsi seed phrase: ${result.decrypted_seed_phrase}`;
+        }
+    </script>
+</body>
+</html>
